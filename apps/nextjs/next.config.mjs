@@ -17,5 +17,8 @@ export default withTM(["@chat/ui"])(
   defineNextConfig({
     reactStrictMode: true,
     swcMinify: true,
+    eslint: {
+      ignoreDuringBuilds : true,
+    }
   })
 );

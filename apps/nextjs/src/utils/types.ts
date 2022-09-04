@@ -1,5 +1,3 @@
-import { UserProfile } from "@auth0/nextjs-auth0";
-
 export interface Message {
 	content: string;
 	author: string | null | undefined;

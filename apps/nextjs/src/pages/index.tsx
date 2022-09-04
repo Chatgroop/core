@@ -1,9 +1,6 @@
 import type { NextPage } from "next";
-import type { inferProcedureOutput } from "@trpc/server";
-import type { AppRouter } from "@chat/api";
 import { useUser } from '@auth0/nextjs-auth0';
 import LoginButton from '@chat/ui/src/ui/Button/LoginButton';
-import LogoutButton from '@chat/ui/src/ui/Button/LogoutButton';
 import Nav from '@chat/ui/src/ui/NavBar/HomeNav';
 import Nav2 from '@chat/ui/src/ui/NavBar/AppNav';
 import { useChannelMessage, useReadChannelState } from "@onehop/react";
@@ -11,13 +8,11 @@ import { startTransition, useEffect, useRef, useState } from "react";
 import { HOP_CHANNEL_NAME } from "../utils/config";
 import { getErrorMessage } from "../utils/errors";
 import { Message, PickWhereValuesAre } from "../utils/types";
-import { useTheme } from "next-themes";
 
 const Home: NextPage = () => {
   const messageEndRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
 	const [messages, setMessages] = useState<Array<Message>>([]);
-  const { theme, setTheme } = useTheme();
 	const [message, setMessage] = useState<Omit<Message, "id" | "isAdmin">>({
 		author: "",
     picture: "",

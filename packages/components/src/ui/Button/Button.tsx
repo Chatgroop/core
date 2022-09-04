@@ -1,4 +1,4 @@
-
+{/* @ts-ignore */}
 export default function DarkButton({ children, className, onClick }) {
     return (
         <button
