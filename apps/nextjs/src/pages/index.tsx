@@ -4,10 +4,11 @@ import LoginButton from '@chat/ui/src/ui/Button/LoginButton';
 import Nav from '@chat/ui/src/ui/NavBar/HomeNav';
 import Nav2 from '@chat/ui/src/ui/NavBar/AppNav';
 import { useChannelMessage, useReadChannelState } from "@onehop/react";
-import { startTransition, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HOP_CHANNEL_NAME } from "../utils/config";
 import { getErrorMessage } from "../utils/errors";
 import { Message, PickWhereValuesAre } from "../utils/types";
+import BarLoader from "react-spinners/BarLoader";
 
 const Home: NextPage = () => {
   const messageEndRef = useRef<HTMLDivElement>(null);
@@ -26,13 +27,25 @@ const Home: NextPage = () => {
 		setMessages(messages => [message, ...messages]);
 	});
 
+  const scrollToBottom = () => {
+    document.getElementById("messagesEnd")?.scrollIntoView({ behavior: "smooth" });
+  }
+
 	useEffect(() => {
-		if (messages.length === 0 && state && state.messages.length > 0) {
+		if (messages.length === 0 && state && state.messages.length > 0) {  
 			setMessages(state.messages);
 		}
     if (message.author === user?.nickname) {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
+    if (messages.length === 0) {
+      setLoading(true);
+    }
+    if (messages.length > 0) {
+      setLoading(false);
+    }
+    
+    scrollToBottom()
 	}, [state, messages]);
 
 	useEffect(() => {
@@ -69,12 +82,9 @@ const Home: NextPage = () => {
           e.preventDefault();
 
           // onclick scroll to bottom of this div
-          const messagesEnd = document.getElementById("messagesEnd");
-          messagesEnd?.scrollIntoView({ behavior: "smooth" });
 					if (message.content.trim() === "") {
             return;
 					}
-					setLoading(true);
           
           {/* @ts-ignore */}
           message.author = user.name;
@@ -102,56 +112,63 @@ const Home: NextPage = () => {
           } catch (e: unknown) {
               console.error(e);
 				  		alert(getErrorMessage(e));
-				  	} finally {
-              startTransition(() => {
-                setLoading(false);
-				  		});
 				  	}
 			  	}
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return (
+            <div className="flex justify-center items-center h-screen">
+            <BarLoader color="#00BFFF" loading={loading} />
+          </div>
+  )
+
   if (error) return <div>{error.message}</div>;
 
   if (user) {
     return (
-      <>
       <div className="flex-col flex justify-between w-screen h-screen bg-gray-50 dark:bg-gray-700 z-[999] fixed" >
-      <Nav2 />
-      <div className="max-h-screen overflow-auto px-8 lg:px-16">
-			<ul className="flex flex-col gap-5 rotate-180 justify-start">
-        {messages.map(message => <ChatMessage message={message} />)}
-			</ul>
-        <div ref={messageEndRef} />
+        <Nav2 />
+        {
+          loading ?
+          <div className="flex justify-center items-center h-screen">
+            <BarLoader color="#00BFFF" loading={loading} />
+          </div>
+          :
+          <>
+          <div className="max-h-screen overflow-auto px-8 lg:px-16">
+            <ul className="flex flex-col gap-5 rotate-180 justify-start">
+              {messages.map(message => <ChatMessage message={message} />)}
+              </ul>
+                <div ref={messageEndRef} />
+                  </div>
+                    <div className="my-auto px-8 lg:px-16 py-4">
+                     <form
+                  onSubmit={SendMessage}>
+                      <div className="flex justify-between bg-gray-200 dark:bg-gray-800 rounded-full mx-auto px-4 my-auto">
+                        <input
+                        className="bg-transparent py-2 w-full focus:outline-none font-poppins"
+                        ref={inputRef}
+                        disabled={loading}
+                        type="text"
+                        placeholder="Write a message..."
+                        value={message.content}
+                        onChange={set("content")}
+                        >
+                        </input>
+                        <button
+                        className="py-2 px-4"
+                        disabled={loading}
+                        type="submit"
+                        >
+                         <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8.77816 12.6777L13.7279 20.4558L20.0919 1.36396L0.999983 7.72792L8.77816 12.6777ZM8.77816 12.6777L14.435 7.02082" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                  </button>
+                </div>
+              </form>
+          </div>
+        </>
+        }
       </div>
-      <div className="my-auto px-8 lg:px-16 py-4">
-			<form
-        
-				onSubmit={SendMessage}>
-        <div className="flex justify-between bg-gray-200 dark:bg-gray-800 rounded-full mx-auto px-4 my-auto">
-				  <input
-          className="bg-transparent py-2 w-full focus:outline-none font-poppins"
-          ref={inputRef}
-          disabled={loading}
-          type="text"
-          placeholder="Write a message..."
-          value={message.content}
-          onChange={set("content")}
-          >
-          </input>
-          <button
-          className="py-2 px-4"
-          disabled={loading}
-          type="submit"
-          >
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8.77816 12.6777L13.7279 20.4558L20.0919 1.36396L0.999983 7.72792L8.77816 12.6777ZM8.77816 12.6777L14.435 7.02082" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-          </div>
-			  </form>
-          </div>
-          </div>
-    </>
     )
   }
 
